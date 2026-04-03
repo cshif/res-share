@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>章魚燒搭配甜點</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --background: #f5f7fb;
+      --foreground: #18181b;
+      --card: rgba(255, 255, 255, 0.88);
+      --card-strong: #ffffff;
+      --muted: #f8fafc;
+      --muted-foreground: #64748b;
+      --border: rgba(24, 24, 27, 0.09);
+      --secondary: #eef3f8;
+      --secondary-foreground: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font: 15px/1.7 "SF Pro Text", "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
+      color: var(--foreground);
+      position: relative;
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.98), transparent 30%),
+        linear-gradient(180deg, #ffffff 0%, var(--background) 100%);
+    }
+
+    .app-shell {
+      width: min(1040px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 64px;
+      display: grid;
+      grid-template-columns: 188px minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .menu-spacer {
+      min-height: 1px;
+    }
+
+    .editor-shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    #titleField {
+      display: grid;
+      gap: 0;
+    }
+
+    #titleDisplay {
+      width: 100%;
+      min-height: 47px;
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .thread {
+      display: grid;
+      gap: 14px;
+    }
+
+    .message-row {
+      display: flex;
+    }
+
+    .message-row.is-user {
+      justify-content: flex-end;
+    }
+
+    .message-row.is-assistant {
+      justify-content: stretch;
+    }
+
+    .message-card {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--card);
+    }
+
+    .message-card.is-user {
+      width: min(720px, calc(100% - 48px));
+      padding: 16px 18px;
+      border-color: rgba(148, 163, 184, 0.16);
+      background: var(--secondary);
+    }
+
+    .message-card.is-assistant {
+      width: 100%;
+      padding: 18px 18px 8px;
+      background: var(--card-strong);
+    }
+
+    .message-meta {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.05);
+      color: var(--muted-foreground);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .message-card.is-user .message-body {
+      color: var(--secondary-foreground);
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message-card.is-user[hidden] {
+      display: none;
+    }
+
+    #contentStage {
+      position: relative;
+      min-width: 0;
+    }
+
+    #content {
+      line-height: 1.75;
+      color: var(--foreground);
+      font-size: 15px;
+    }
+
+    #content pre {
+      margin: 0 0 20px;
+      padding: 16px 18px;
+      overflow: auto;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      background: #f8fafc;
+    }
+
+    #content code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    #content :not(pre) > code {
+      padding: 0.15em 0.4em;
+      border-radius: 8px;
+      background: #f4f4f5;
+      font-size: 0.92em;
+    }
+
+    #content p,
+    #content ul,
+    #content ol,
+    #content pre,
+    #content blockquote,
+    #content table {
+      margin: 0 0 20px;
+    }
+
+    #content table {
+      border-collapse: collapse;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 14px;
+      border-style: hidden;
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.22);
+    }
+
+    #content th,
+    #content td {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    #content blockquote {
+      padding: 16px 18px;
+      border-left: 4px solid #d4d4d8;
+      border-radius: 0 16px 16px 0;
+      background: #fafafa;
+      color: #52525b;
+    }
+
+    #content ul,
+    #content ol {
+      padding-left: 1.35rem;
+    }
+
+    #content li + li {
+      margin-top: 6px;
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+      margin: 0 0 16px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    #content h1 {
+      font-size: 2rem;
+    }
+
+    #content h2 {
+      font-size: 1.55rem;
+    }
+
+    #content h3 {
+      font-size: 1.25rem;
+    }
+
+    #content > *:last-child {
+      margin-bottom: 0;
+    }
+
+    mark.hl {
+      background: #fff59d;
+      padding: 0 0.08em;
+      border-radius: 0.18em;
+    }
+
+    ::highlight(note-focus) {
+      background: #bfdbfe;
+    }
+
+    .note-source-anchor {
+      border: 0;
+      padding: 0;
+      font: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      margin-left: 8px;
+      border-radius: 999px;
+      vertical-align: middle;
+      color: #1d4ed8;
+      background: #dbeafe;
+      box-shadow: 0 6px 16px rgba(147, 197, 253, 0.22);
+      cursor: pointer;
+    }
+
+    .note-source-anchor:hover {
+      background: #bfdbfe;
+    }
+
+    .note-source-anchor.is-active {
+      background: #bfdbfe;
+      box-shadow:
+        0 0 0 3px rgba(147, 197, 253, 0.32),
+        0 6px 16px rgba(147, 197, 253, 0.22);
+    }
+
+    .note-source-anchor:focus-visible {
+      outline: 0;
+      box-shadow:
+        0 0 0 3px rgba(147, 197, 253, 0.32),
+        0 6px 16px rgba(147, 197, 253, 0.22);
+    }
+
+    .note-source-anchor svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+      pointer-events: none;
+    }
+
+    #noteMarkers {
+      display: none;
+    }
+
+    .note-marker {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 999px;
+      color: #1d4ed8;
+      background: #dbeafe;
+      box-shadow: 0 6px 16px rgba(147, 197, 253, 0.22);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .note-marker:hover {
+      background: #bfdbfe;
+    }
+
+    .note-marker svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    #notesPanel h2 {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+    }
+
+    #notesList {
+      display: grid;
+      gap: 12px;
+    }
+
+    .note-card {
+      padding: 14px 15px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(248, 250, 252, 0.9);
+    }
+
+    .note-card.is-active {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.28);
+    }
+
+    .note-quote-link {
+      border: 0;
+      padding: 0;
+      font: inherit;
+      background: transparent;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .note-quote-link svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    .note-quote {
+      display: block;
+      margin: 0 0 8px;
+      padding-left: 12px;
+      border-left: 3px solid #93c5fd;
+      color: #374151;
+      white-space: pre-wrap;
+    }
+
+    .note-quote-link {
+      display: block;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .note-quote-link:hover .note-quote {
+      color: #1d4ed8;
+      border-left-color: #2563eb;
+    }
+
+    .note-quote-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .note-quote-icon {
+      flex: 0 0 auto;
+      margin-top: 2px;
+      color: #2563eb;
+    }
+
+    .note-body {
+      margin: 0;
+      white-space: pre-wrap;
+      color: #111827;
+    }
+
+    .note-meta {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .empty-notes {
+      color: #6b7280;
+    }
+
+    @media (max-width: 720px) {
+      .app-shell {
+        width: min(100vw - 20px, 1120px);
+        padding: 18px 0 36px;
+        grid-template-columns: 1fr;
+      }
+
+      .menu-spacer {
+        display: none;
+      }
+
+      #editorHeader,
+      .message-card.is-assistant,
+      #notesPanel {
+        padding: 16px;
+        border-radius: 18px;
+      }
+
+      .message-card.is-user {
+        width: 100%;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <div class="menu-spacer" aria-hidden="true"></div>
+
+    <div class="editor-shell">
+      <header id="editorHeader">
+        <div id="titleField">
+          <span id="titlePanel" aria-hidden="true"></span>
+          <div id="titleDisplay" role="heading" aria-level="1">章魚燒搭配甜點</div>
+        </div>
+      </header>
+      
+    <section class="thread" aria-label="Draft conversation">
+      <div id="questionPanel" class="message-row is-user">
+        <article id="promptCard" class="message-card is-user" aria-label="User prompt">
+          <div class="message-meta">Question</div>
+          <div class="message-body">給我開心果布丁食譜</div>
+        </article>
+      </div>
+      <div class="message-row is-assistant">
+        <article id="answerPanel" class="message-card is-assistant" aria-label="Assistant response">
+          <div class="message-meta">Answer</div>
+          <div id="contentStage">
+            <div id="noteMarkers" aria-hidden="true"></div>
+            <div id="content" tabindex="0"><p>可以，這個版本做起來會是<strong>香濃、細滑、帶堅果香</strong>的開心果布丁。
+我給你一個家裡比較容易成功的配方。</p>
+<h2>開心果布丁（約 <mark class="hl">4 杯</mark>）</h2>
+<h3>材料</h3>
+<p><strong>布丁液</strong></p>
+<ul>
+<li>牛奶 350 ml</li>
+<li>鮮奶油 100 ml</li>
+<li>雞蛋 2 顆</li>
+<li>蛋黃 2 顆</li>
+<li>細砂糖 45–55 g</li>
+<li>無調味開心果醬 60–80 g
+或去殼無鹽開心果 70 g 打成醬<button id="note-source-note_1775218435781" class="note-source-anchor" type="button" data-note-id="note_1775218435781" data-action="jump-to-note" aria-label="查看筆記"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15.44 4.06 4.5 4.5-9.73 9.73-4.91.41.41-4.91 9.73-9.73Zm1.06-1.06a1.5 1.5 0 0 0-2.12 0L4.3 13.08a1.5 1.5 0 0 0-.43.9l-.5 6a.75.75 0 0 0 .81.81l6-.5a1.5 1.5 0 0 0 .9-.43L21 9.62a1.5 1.5 0 0 0 0-2.12L16.5 3Z"></path></svg></button></li>
+<li>香草精幾滴，<mark class="hl">可省略</mark></li>
+<li>鹽一小撮</li>
+</ul>
+<p><strong>焦糖（可做可不做）</strong></p>
+<ul>
+<li>細砂糖 50 g</li>
+<li>水 15 g</li>
+<li>熱水 15–20 g</li>
+</ul>
+<p><strong>裝飾</strong></p>
+<ul>
+<li>切碎開心果少許</li>
+<li>鮮奶油少許，可省略</li>
+</ul>
+<hr>
+<h2>沒有開心果醬怎麼辦</h2>
+<p>如果你是用<strong>整顆開心果</strong>：</p>
+<ol>
+<li>去殼無鹽開心果 70 g，先用熱水泡 5–10 分鐘。</li>
+<li>想口感更細可以順手把外皮搓掉一部分。</li>
+<li>加 1～2 大匙牛奶，用攪拌機或食物調理機打成糊。</li>
+<li>打不動就再補一點牛奶，但不要太稀。</li>
+</ol>
+<p>這樣就能拿來做布丁。</p>
+<hr>
+<h2>做法</h2>
+<h3>1. 先做焦糖（可省略）</h3>
+<ol>
+<li>小鍋放糖和水，開中小火。</li>
+<li>不要用湯匙攪，輕晃鍋子就好。</li>
+<li>煮到琥珀色後關火。</li>
+<li>小心加入熱水拌勻。</li>
+<li>立刻倒入布丁杯底部。</li>
+</ol>
+<p>不想做焦糖也可以直接做成<strong>純開心果布丁</strong>。</p>
+<hr>
+<h3>2. 加熱牛奶</h3>
+<ol>
+<li>牛奶、鮮奶油、糖、鹽放進小鍋。</li>
+<li>小火加熱到溫熱，糖融化即可，<strong>不要煮滾</strong>。</li>
+<li>加入開心果醬，攪拌到大致均勻。</li>
+<li>如果顆粒比較明顯，可以再過篩一次。</li>
+</ol>
+<hr>
+<h3>3. 混合蛋液</h3>
+<ol>
+<li>全蛋和蛋黃先打散。
+不要打發，輕輕拌勻就好。</li>
+<li>把溫熱的開心果奶液慢慢倒進蛋液，一邊攪拌。</li>
+<li>加香草精。</li>
+<li>整體再過篩 1～2 次，口感會更滑。</li>
+</ol>
+<hr>
+<h3>4. 蒸或烤</h3>
+<h4>蒸法</h4>
+<ol>
+<li>布丁液倒入杯中，表面泡泡可用湯匙撈掉。</li>
+<li>蓋上鋁箔。</li>
+<li>水滾後轉<strong>最小火</strong>，蒸約 12～15 分鐘。</li>
+<li>中間微微晃、邊緣凝固就可以。</li>
+</ol>
+<h4>烤法</h4>
+<ol>
+<li>烤箱預熱 150°C。</li>
+<li>布丁杯放入深烤盤。</li>
+<li>外盤加入熱水，約到杯身一半高度。</li>
+<li>烤 25～35 分鐘。</li>
+</ol>
+<hr>
+<h3>5. 冷藏</h3>
+<ul>
+<li>放涼後冷藏至少 3 小時。</li>
+<li>吃之前撒上<mark class="hl">碎開心果</mark>，香氣更明顯。</li>
+</ul>
+<hr>
+<h2>小提醒</h2>
+<ul>
+<li><strong>開心果味不夠濃</strong>：把開心果醬加到 80 g。</li>
+<li><strong>想更綠一點</strong>：天然做法顏色通常不會很鮮豔，這是正常的。<button id="note-source-note_1775218366329" class="note-source-anchor" type="button" data-note-id="note_1775218366329" data-action="jump-to-note" aria-label="查看筆記"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15.44 4.06 4.5 4.5-9.73 9.73-4.91.41.41-4.91 9.73-9.73Zm1.06-1.06a1.5 1.5 0 0 0-2.12 0L4.3 13.08a1.5 1.5 0 0 0-.43.9l-.5 6a.75.75 0 0 0 .81.81l6-.5a1.5 1.5 0 0 0 .9-.43L21 9.62a1.5 1.5 0 0 0 0-2.12L16.5 3Z"></path></svg></button></li>
+<li><strong>怕太膩</strong>：糖量用 45 g，焦糖省略。</li>
+<li><strong>想更濃郁</strong>：牛奶 300 ml、鮮奶油 150 ml。</li>
+</ul>
+<hr>
+<h2>比較好吃的版本</h2>
+<p>我會推薦你做這種比例：</p>
+<ul>
+<li>牛奶 320 ml</li>
+<li><mark class="hl">鮮奶油 120 ml</mark></li>
+<li>全蛋 2 顆</li>
+<li>蛋黃 2 顆</li>
+<li>糖 45 g</li>
+<li>開心果醬 80 g</li>
+<li>鹽一小撮</li>
+</ul>
+<p>這版會比較像甜點店的口感。</p>
+<hr>
+<h2>想做免烤版的話</h2>
+<p>也可以做成<strong>開心果奶酪／開心果鮮奶布丁</strong>，<mark class="hl">用吉利丁定型</mark>，做法更簡單，失敗率更低。</p>
+<p>你要的話，我可以直接再給你一版<strong>免烤開心果布丁食譜</strong>。</p>
+</div>
+          </div>
+        </article>
+      </div>
+    </section>
+  
+      
+    <section id="notesPanel" aria-label="Saved notes">
+      <h2>筆記</h2>
+      <div id="notesList">
+        
+              <article class="note-card" id="note-card-note_1775218435781">
+                <a class="note-quote-link" href="#note-source-note_1775218435781" data-action="jump-to-source" data-note-id="note_1775218435781">
+                  <span class="note-quote-row">
+                    <span class="note-quote-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 4h6v6h-1.5V6.56l-7.72 7.72-1.06-1.06 7.72-7.72H14V4ZM6.5 6A2.5 2.5 0 0 0 4 8.5v9A2.5 2.5 0 0 0 6.5 20h9a2.5 2.5 0 0 0 2.5-2.5V13H16.5v4.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1H11V6H6.5Z" />
+                      </svg>
+                    </span>
+                    <span class="note-quote">無調味開心果醬 60–80 g
+或去殼無鹽開心果 70 g 打成醬</span>
+                  </span>
+                </a>
+                <p class="note-body">原來如此</p>
+                <div class="note-meta">2026/04/03 下午08:13</div>
+              </article>
+            
+              <article class="note-card" id="note-card-note_1775218366329">
+                <a class="note-quote-link" href="#note-source-note_1775218366329" data-action="jump-to-source" data-note-id="note_1775218366329">
+                  <span class="note-quote-row">
+                    <span class="note-quote-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 4h6v6h-1.5V6.56l-7.72 7.72-1.06-1.06 7.72-7.72H14V4ZM6.5 6A2.5 2.5 0 0 0 4 8.5v9A2.5 2.5 0 0 0 6.5 20h9a2.5 2.5 0 0 0 2.5-2.5V13H16.5v4.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1H11V6H6.5Z" />
+                      </svg>
+                    </span>
+                    <span class="note-quote">想更綠一點：天然做法顏色通常不會很鮮豔，這是正常的。</span>
+                  </span>
+                </a>
+                <p class="note-body">好像沒解決問題欸</p>
+                <div class="note-meta">2026/04/03 下午08:12</div>
+              </article>
+            
+      </div>
+    </section>
+  
+    </div>
+  </main>
+  <script id="shareNotesData" type="application/json">[{"id":"note_1775218435781","startOffset":116,"endOffset":149},{"id":"note_1775218366329","startOffset":814,"endOffset":840}]</script>
+  <script>
+    (() => {
+      const notesDataEl = document.getElementById("shareNotesData");
+      const notes = notesDataEl ? JSON.parse(notesDataEl.textContent || "[]") : [];
+      const contentEl = document.getElementById("content");
+      const noteMarkersEl = document.getElementById("noteMarkers");
+      const notesListEl = document.getElementById("notesList");
+      let focusHighlightTimer = 0;
+      let activeNoteCardTimer = 0;
+      let activeSourceAnchorTimer = 0;
+      let focusSelectionTimer = 0;
+
+      if (!contentEl || !noteMarkersEl || !notesListEl || !notes.length) return;
+
+      function getTextNodeAndOffset(root, globalOffset) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        let current = 0;
+        let node;
+
+        while ((node = walker.nextNode())) {
+          const next = current + node.textContent.length;
+          if (globalOffset <= next) {
+            return { node, offset: globalOffset - current };
+          }
+          current = next;
+        }
+
+        return null;
+      }
+
+      function buildRangeFromOffsets(root, start, end) {
+        const startPos = getTextNodeAndOffset(root, start);
+        const endPos = getTextNodeAndOffset(root, end);
+        if (!startPos || !endPos) return null;
+
+        const range = new Range();
+        range.setStart(startPos.node, startPos.offset);
+        range.setEnd(endPos.node, endPos.offset);
+        return range;
+      }
+
+      function getRangeClientRects(range) {
+        return Array.from(range.getClientRects()).filter((rect) => rect.width > 0 || rect.height > 0);
+      }
+
+      function overlapsVertically(a, b) {
+        return Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
+      }
+
+      function getNoteAnchor(noteId) {
+        return document.getElementById("note-source-" + noteId);
+      }
+
+      function getMarkerAnchorFromNoteAnchor(noteId) {
+        const anchor = getNoteAnchor(noteId);
+        if (!anchor) return null;
+
+        const rect = anchor.getBoundingClientRect();
+        if (!(rect.width > 0 || rect.height > 0 || Number.isFinite(rect.top))) return null;
+
+        return {
+          top: rect.top,
+          height: rect.height || parseFloat(getComputedStyle(anchor).lineHeight) || 16,
+          right: rect.right
+        };
+      }
+
+      function getMarkerAnchorForOffsets(start, end) {
+        const range = buildRangeFromOffsets(contentEl, start, end);
+        if (!range) return null;
+
+        const clientRects = getRangeClientRects(range);
+        const lineRect = clientRects[clientRects.length - 1] || range.getBoundingClientRect();
+        if (!(lineRect.width > 0 || lineRect.height > 0 || Number.isFinite(lineRect.top))) return null;
+
+        const endPos = getTextNodeAndOffset(contentEl, end);
+        const endElement =
+          endPos?.node?.nodeType === Node.TEXT_NODE ? endPos.node.parentElement : endPos?.node || null;
+        const blockElement =
+          endElement?.closest("p, li, blockquote, pre, td, th, h1, h2, h3, h4, h5, h6") || contentEl;
+        let anchorRight = lineRect.right;
+
+        if (endPos && blockElement) {
+          const trailingRange = new Range();
+          trailingRange.selectNodeContents(blockElement);
+          trailingRange.setStart(endPos.node, endPos.offset);
+
+          const trailingRects = getRangeClientRects(trailingRange);
+          const sameLineRects = trailingRects.filter((rect) => overlapsVertically(rect, lineRect));
+          if (sameLineRects.length) {
+            anchorRight = Math.max(anchorRight, ...sameLineRects.map((rect) => rect.right));
+          }
+        }
+
+        return {
+          top: lineRect.top,
+          height: lineRect.height,
+          right: anchorRight
+        };
+      }
+
+      function getMarkerAnchorForNote(note) {
+        return getMarkerAnchorFromNoteAnchor(note.id) || getMarkerAnchorForOffsets(note.startOffset, note.endOffset);
+      }
+
+      function setActiveNoteCard(noteId, { scroll = true } = {}) {
+        const card = document.getElementById("note-card-" + noteId);
+        if (!card) return;
+
+        if (scroll) {
+          card.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest"
+          });
+        }
+
+        card.classList.add("is-active");
+        clearTimeout(activeNoteCardTimer);
+        activeNoteCardTimer = window.setTimeout(() => {
+          card.classList.remove("is-active");
+        }, 1800);
+      }
+
+      function setFocusedSourceRange(start, end) {
+        const range = buildRangeFromOffsets(contentEl, start, end);
+        if (!range) return false;
+
+        const topAnchorRect = range.getClientRects()[0] || range.getBoundingClientRect();
+        const top = window.scrollY + topAnchorRect.top - 24;
+
+        window.scrollTo({
+          top: Math.max(0, top),
+          behavior: "smooth"
+        });
+
+        if (globalThis.CSS && CSS.highlights && globalThis.Highlight) {
+          CSS.highlights.delete("note-focus");
+          CSS.highlights.set("note-focus", new Highlight(range));
+          clearTimeout(focusHighlightTimer);
+          focusHighlightTimer = window.setTimeout(() => {
+            CSS.highlights.delete("note-focus");
+          }, 1800);
+        } else {
+          const selection = window.getSelection();
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+          clearTimeout(focusSelectionTimer);
+          focusSelectionTimer = window.setTimeout(() => {
+            const activeSelection = window.getSelection();
+            activeSelection?.removeAllRanges();
+          }, 1800);
+        }
+
+        return true;
+      }
+
+      function setActiveSourceAnchor(noteId) {
+        const anchor = getNoteAnchor(noteId);
+        if (!anchor) return false;
+
+        anchor.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest"
+        });
+        anchor.classList.add("is-active");
+        clearTimeout(activeSourceAnchorTimer);
+        activeSourceAnchorTimer = window.setTimeout(() => {
+          anchor.classList.remove("is-active");
+        }, 1800);
+        return true;
+      }
+
+      function getNoteById(noteId) {
+        return notes.find((note) => note.id === noteId) || null;
+      }
+
+      function jumpToSource(noteId) {
+        const note = getNoteById(noteId);
+        if (!note) return;
+
+        const movedToAnchor = setActiveSourceAnchor(note.id);
+        const focusedRange = setFocusedSourceRange(note.startOffset, note.endOffset);
+
+        if (movedToAnchor || focusedRange) {
+          setActiveNoteCard(note.id, { scroll: false });
+          return;
+        }
+
+        setActiveNoteCard(note.id, { scroll: false });
+      }
+
+      function jumpToNoteCard(noteId) {
+        const note = getNoteById(noteId);
+        if (!note) return;
+
+        setActiveNoteCard(note.id);
+      }
+
+      function renderNoteMarkers() {
+        noteMarkersEl.replaceChildren();
+
+        const fragment = document.createDocumentFragment();
+        const markerLayerRect = noteMarkersEl.getBoundingClientRect();
+
+        for (const [index, note] of notes.entries()) {
+          const anchor = getMarkerAnchorForNote(note);
+          if (!anchor) continue;
+
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "note-marker";
+          button.dataset.noteId = note.id;
+          button.title = "查看筆記";
+          button.setAttribute("aria-label", "查看筆記");
+          button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15.44 4.06 4.5 4.5-9.73 9.73-4.91.41.41-4.91 9.73-9.73Zm1.06-1.06a1.5 1.5 0 0 0-2.12 0L4.3 13.08a1.5 1.5 0 0 0-.43.9l-.5 6a.75.75 0 0 0 .81.81l6-.5a1.5 1.5 0 0 0 .9-.43L21 9.62a1.5 1.5 0 0 0 0-2.12L16.5 3Z"></path></svg>';
+
+          const size = 28;
+          const edgePadding = 4;
+          const markerGap = 8;
+          const stackOffset = (index % 3) * 6;
+          const left = Math.min(
+            noteMarkersEl.clientWidth - size - edgePadding,
+            Math.max(edgePadding, anchor.right - markerLayerRect.left + markerGap + stackOffset)
+          );
+          const top = Math.min(
+            noteMarkersEl.clientHeight - size - edgePadding,
+            Math.max(edgePadding, anchor.top - markerLayerRect.top + anchor.height / 2 - size / 2)
+          );
+
+          button.style.transform = "translate(" + Math.round(left) + "px, " + Math.round(top) + "px)";
+          fragment.appendChild(button);
+        }
+
+        noteMarkersEl.appendChild(fragment);
+      }
+
+      noteMarkersEl.addEventListener("click", (event) => {
+        const button = event.target.closest(".note-marker");
+        if (!button) return;
+
+        jumpToNoteCard(button.dataset.noteId);
+      });
+
+      notesListEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-action='jump-to-source']");
+        if (!button) return;
+
+        event.preventDefault();
+        jumpToSource(button.dataset.noteId);
+      });
+
+      contentEl.addEventListener("click", (event) => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest("[data-action='jump-to-note']");
+        if (!button) return;
+
+        event.preventDefault();
+        jumpToNoteCard(button.dataset.noteId);
+      });
+
+      contentEl.addEventListener("keydown", (event) => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest("[data-action='jump-to-note']");
+        if (!button) return;
+        if (event.key !== "Enter" && event.key !== " ") return;
+
+        event.preventDefault();
+        jumpToNoteCard(button.dataset.noteId);
+      });
+
+      window.addEventListener("resize", () => {
+        renderNoteMarkers();
+      });
+
+      window.addEventListener("load", () => {
+        renderNoteMarkers();
+      });
+
+      window.requestAnimationFrame(() => {
+        renderNoteMarkers();
+      });
+
+      window.setTimeout(() => {
+        renderNoteMarkers();
+      }, 250);
+
+      renderNoteMarkers();
+    })();
+  </script>
+</body>
+</html>
